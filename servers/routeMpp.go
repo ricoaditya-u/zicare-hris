@@ -9,13 +9,15 @@ func InitializeRoutesMpp(g *gin.RouterGroup) {
 	{
 		// HEAD DIV/DEPT
 		// MPP
-		g.GET("/index", controllers.MppIndex)
+		g.GET("/index/:employeeid/", controllers.MppIndex)
 		g.POST("/createMpp", controllers.MppCreate)
 		g.PUT("/updateMpp/:id", controllers.MppUpdate)
 		g.GET("/showMpp/:id", controllers.MppShow)
-
 		// REQ HEADCOUNT
-		g.POST("/createHeadcount", controllers.HeadcountCreate)
+		g.GET("/index/:employeeid/:period", controllers.ListMpp)
+		g.GET("/formHeadcount/:mppid", controllers.FormHeadcount) // Form Create
+		g.POST("/createHeadcount", controllers.CreateHeadcount)
+		g.GET("/showAllHeadcount", controllers.ShowAllHeadcount)
 
 		// HR
 		g.GET("/listUnapproveMpp", controllers.MppListUnapprove)

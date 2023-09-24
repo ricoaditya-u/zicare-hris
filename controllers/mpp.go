@@ -4,8 +4,9 @@ package controllers
 
 import (
 	"errors"
+	"math/rand"
 	"net/http"
-	"regexp"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ricoaditya-u/hris-master/db"
@@ -13,28 +14,35 @@ import (
 	"gorm.io/gorm"
 )
 
-func isValidYearMonth(input string) bool {
-	// Definisikan pola regex untuk format YYYY-MM
-	pattern := `^\d{4}-\d{2}$`
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-	// Buat objek regex
-	regex := regexp.MustCompile(pattern)
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
-	// Lakukan pencocokan regex pada input
-	return regex.MatchString(input)
+func GenerateRandomString(length int) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
 }
 
 // ======================================================================================================
 // ======================================================================================================
 // ======================================================================================================
 func MppIndex(c *gin.Context) {
+	employeeid := c.Param("employeeid")
+
 	var mpps []models.Mpp
-	err := db.DB.Find(&mpps).Error
+	err := db.DB.Find(&mpps, "employee_id = ?", employeeid).Error
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
+		errors.Is(err, gorm.ErrRecordNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "record not found",
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -55,16 +63,10 @@ func MppCreate(c *gin.Context) {
 	}
 
 	for i := range body {
-		// Validasi format input period (YYYY-MM)
-		if isValidYearMonth(body[i].Period) != true {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": "Period format doesn't match",
-			})
-			return
-		}
-
 		mpp := models.Mpp{
-			Period:       body[i].Period,
+			EmployeeID:   body[i].EmployeeID,
+			Year:         body[i].Year,
+			Month:        body[i].Month,
 			DepartmentID: body[i].DepartmentID,
 			Numberreq:    body[i].Numberreq,
 			Budget:       body[i].Budget,
@@ -75,7 +77,7 @@ func MppCreate(c *gin.Context) {
 
 		if result.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": result.Error,
+				"errors": result.Error,
 			})
 			return
 		}
@@ -116,7 +118,8 @@ func MppUpdate(c *gin.Context) {
 
 	// Update
 	err = db.DB.Model(&mppData).Updates(models.Mpp{
-		Period:       body.Period,
+		Year:         body.Year,
+		Month:        body.Month,
 		DepartmentID: body.DepartmentID,
 		Numberreq:    body.Numberreq,
 		Budget:       body.Budget,

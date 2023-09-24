@@ -1,7 +1,120 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+// STATUS 0 = submission; 1 = revision; 2 = approved; 3 = Proccess Recruitment/as candidate
 
-func HeadcountCreate(c *gin.Context) {
+import (
+	"errors"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/ricoaditya-u/hris-master/db"
+	"github.com/ricoaditya-u/hris-master/models"
+	"gorm.io/gorm"
+)
+
+func ListMpp(c *gin.Context) {
+	employeeid := c.Param("employeeid")
+	period := c.Param("period")
+
+	var mpps []models.Mpp
+	err := db.DB.Where("employee_id = ? AND year = ?", employeeid, period).Find(&mpps).Error
+
+	if err != nil {
+		errors.Is(err, gorm.ErrRecordNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "record not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": mpps,
+	})
+}
+
+func FormHeadcount(c *gin.Context) {
+	mppid := c.Param("mppid")
+
+	var mpp models.Mpp
+	err := db.DB.First(&mpp, "ID = ?", mppid).Error
+
+	if err != nil {
+		errors.Is(err, gorm.ErrRecordNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "record not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": mpp,
+	})
+}
+
+func CreateHeadcount(c *gin.Context) {
+	// Get data req
+	var body models.Reqheadcount
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validasi jumlah pengajuan (based on MPP)
+	var mppData models.Mpp
+	err := db.DB.First(&mppData, "id = ?", body.MppID).Error
+	if err != nil {
+		errors.Is(err, gorm.ErrRecordNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "record not found",
+		})
+		return
+	}
+
+	var data models.Reqheadcount
+	var count int64
+	db.DB.Where("mpp_id = ?", body.MppID).Find(&data).Count(&count)
+
+	if count >= int64(mppData.Numberreq) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Number of Request beyond annual MPP, can't apply again"})
+		return
+	}
+
+	// Insert
+	headcount := models.Reqheadcount{
+		MppID:            body.MppID,
+		EmployeeID:       body.EmployeeID,
+		LevelID:          body.LevelID,
+		GradeID:          body.GradeID,
+		Statusemployee:   body.Statusemployee,
+		Reasonhiring:     body.Reasonhiring,
+		Degree:           body.Degree,
+		Minexp:           body.Minexp,
+		JobDescriptionID: body.JobDescriptionID,
+		Specification:    body.Specification,
+		Gender:           body.Gender,
+		Age:              body.Age,
+		Maritalstatus:    body.Maritalstatus,
+		Recruitmenttype:  body.Recruitmenttype,
+		Status:           body.Status,
+	}
+
+	result := db.DB.Create(&headcount)
+
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"errors": result.Error,
+		})
+		return
+	}
+
+	// Return
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Created Success",
+		// "message": count,
+	})
+}
+
+func ShowAllHeadcount(c *gin.Context) {
 
 }

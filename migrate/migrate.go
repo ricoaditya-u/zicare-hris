@@ -12,16 +12,16 @@ func init() {
 
 func main() {
 	db.DB.AutoMigrate(
-		&models.Grade{},
-		&models.JobDescription{},
-		&models.Level{},
-		&models.Division{},
-		&models.Department{},
-		&models.Supervision{},
-		&models.Employee{},
-		&models.User{},
-		&models.Mpp{},
+		// &models.Grade{},
+		// &models.JobDescription{},
+		// &models.Level{},
+		// &models.Division{},
+		// &models.Department{},
+		// &models.Supervision{},
+		// &models.Employee{},
+		// &models.User{},
+		// &models.Mpp{},
 		&models.Reqheadcount{},
-		&models.Casbin_rule{},
+		// &models.Casbin_rule{},
 	)
 }
