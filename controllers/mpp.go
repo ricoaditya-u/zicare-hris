@@ -4,9 +4,7 @@ package controllers
 
 import (
 	"errors"
-	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ricoaditya-u/hris-master/db"
@@ -14,23 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
-func GenerateRandomString(length int) string {
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
-	}
-	return string(b)
-}
-
-// ======================================================================================================
-// ======================================================================================================
-// ======================================================================================================
 func MppIndex(c *gin.Context) {
 	employeeid := c.Param("employeeid")
 
@@ -183,7 +164,7 @@ func MppListUnapprove(c *gin.Context) {
 // ======================================================================================================
 // ======================================================================================================
 // ======================================================================================================
-func MppApprove(c *gin.Context) {
+func ApproveMpp(c *gin.Context) {
 	id := c.Param("id")
 
 	var mppData models.Mpp
@@ -216,7 +197,7 @@ func MppApprove(c *gin.Context) {
 // ======================================================================================================
 // ======================================================================================================
 // ======================================================================================================
-func MppRevision(c *gin.Context) {
+func RevisionMpp(c *gin.Context) {
 	id := c.Param("id")
 
 	var mppData models.Mpp

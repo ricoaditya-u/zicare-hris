@@ -17,11 +17,14 @@ func InitializeRoutesMpp(g *gin.RouterGroup) {
 		g.GET("/index/:employeeid/:period", controllers.ListMpp)
 		g.GET("/formHeadcount/:mppid", controllers.FormHeadcount) // Form Create
 		g.POST("/createHeadcount", controllers.CreateHeadcount)
-		g.GET("/showAllHeadcount", controllers.ShowAllHeadcount)
+		g.GET("/showAllHeadcount/:employeeid", controllers.ShowAllHeadcount)
+		g.PUT("/updateReqHeadcount/:id", controllers.UpdateHeadcount)
 
 		// HR
 		g.GET("/listUnapproveMpp", controllers.MppListUnapprove)
-		g.PUT("/approveMpp/:id", controllers.MppApprove)
-		g.PUT("/revisionMpp/:id", controllers.MppRevision)
+		g.PUT("/approveMpp/:id", controllers.ApproveMpp)
+		g.PUT("/revisionMpp/:id", controllers.RevisionMpp)
+		g.PUT("/approveReqHeadcount/:id", controllers.ApproveReqHeadcount)
+		g.PUT("/revisionReqHeadcount/:id", controllers.RevisionReqHeadcount)
 	}
 }

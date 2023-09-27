@@ -12,6 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
 func ListMpp(c *gin.Context) {
 	employeeid := c.Param("employeeid")
 	period := c.Param("period")
@@ -32,6 +35,9 @@ func ListMpp(c *gin.Context) {
 	})
 }
 
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
 func FormHeadcount(c *gin.Context) {
 	mppid := c.Param("mppid")
 
@@ -51,6 +57,9 @@ func FormHeadcount(c *gin.Context) {
 	})
 }
 
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
 func CreateHeadcount(c *gin.Context) {
 	// Get data req
 	var body models.Reqheadcount
@@ -115,6 +124,144 @@ func CreateHeadcount(c *gin.Context) {
 	})
 }
 
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
 func ShowAllHeadcount(c *gin.Context) {
+	employeeid := c.Param("employeeid")
 
+	var headcounts []models.Reqheadcount
+	err := db.DB.Where("employee_id = ?", employeeid).Find(&headcounts).Error
+	if err != nil {
+		errors.Is(err, gorm.ErrRecordNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "record not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": headcounts,
+	})
+}
+
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
+func UpdateHeadcount(c *gin.Context) {
+	// Get id
+	id := c.Param("id")
+
+	// Get data req
+	var body models.Reqheadcount
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Find the data
+	var headcountData models.Reqheadcount
+	err := db.DB.First(&headcountData, "id = ?", id).Error
+	if err != nil {
+		errors.Is(err, gorm.ErrRecordNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "record not found",
+		})
+		return
+	}
+
+	// Update
+	err = db.DB.Model(&headcountData).Updates(models.Reqheadcount{
+		LevelID:          body.LevelID,
+		GradeID:          body.GradeID,
+		Statusemployee:   body.Statusemployee,
+		Reasonhiring:     body.Reasonhiring,
+		Degree:           body.Degree,
+		Minexp:           body.Minexp,
+		JobDescriptionID: body.JobDescriptionID,
+		Specification:    body.Specification,
+		Gender:           body.Gender,
+		Age:              body.Age,
+		Maritalstatus:    body.Maritalstatus,
+		Recruitmenttype:  body.Recruitmenttype,
+	}).Error
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	// Respond
+	c.JSON(http.StatusOK, gin.H{
+		"data": "Updated Success",
+	})
+}
+
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
+func ApproveReqHeadcount(c *gin.Context) {
+	id := c.Param("id")
+
+	var headcountData models.Reqheadcount
+	err := db.DB.First(&headcountData, "ID = ?", id).Error
+
+	if err != nil {
+		errors.Is(err, gorm.ErrRecordNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "record not found",
+		})
+		return
+	}
+
+	// Update
+	err = db.DB.Model(&headcountData).Updates(models.Reqheadcount{Status: "2"}).Error
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	// Respond
+	c.JSON(http.StatusOK, gin.H{
+		"data": "Approved Success",
+	})
+}
+
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
+func RevisionReqHeadcount(c *gin.Context) {
+	id := c.Param("id")
+
+	var headcountData models.Reqheadcount
+	err := db.DB.First(&headcountData, "ID = ?", id).Error
+
+	if err != nil {
+		errors.Is(err, gorm.ErrRecordNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "record not found",
+		})
+		return
+	}
+
+	// Update
+	err = db.DB.Model(&headcountData).Updates(models.Reqheadcount{Status: "1"}).Error
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	// Respond
+	c.JSON(http.StatusOK, gin.H{
+		"data": "Revision Success",
+	})
 }
